@@ -28,7 +28,8 @@ class ICalendarView(HomeAssistantView):
     """Serve iCalendar feeds."""
 
     name = DOMAIN
-    url = f"{URL_PATH_PREFIX}/{{entry_id}}/{{secret}}"
+    url = f"{URL_PATH_PREFIX}/{{entry_id}}/{{secret}}.ics"
+    extra_urls = [f"{URL_PATH_PREFIX}/{{entry_id}}/{{secret}}"]
     requires_auth = False
 
     def __init__(self, hass: HomeAssistant, resolver: LocationResolver | None = None) -> None:

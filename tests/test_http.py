@@ -33,12 +33,17 @@ def test_empty_feed_and_private_cache_policy():
     assert response.content_type == 'text/calendar'
 
 
+def test_feed_url_ends_in_ics_with_legacy_route_kept_for_compatibility():
+    assert ICalendarView.url.endswith('.ics')
+    assert ICalendarView.extra_urls == [ICalendarView.url.removesuffix('.ics')]
+
+
 def test_secret_and_url_validation():
     assert _is_secret_valid('aB_-' * 6)
     for secret in ('short', '日' * 20, 'a' * 20 + '/', 'a' * 20 + '?', 'a' * 20 + '\n'):
         assert not _is_secret_valid(secret)
     hass = SimpleNamespace(config=SimpleNamespace(internal_url='https://ha.local/', external_url=None))
-    assert _build_feed_urls(hass, 'entry', 'legacy?#')[0] == 'https://ha.local/api/ics/entry/legacy%3F%23'
+    assert _build_feed_urls(hass, 'entry', 'legacy?#')[0] == 'https://ha.local/api/ics/entry/legacy%3F%23.ics'
 
 
 def test_combined_feed_namespaces_identical_events():

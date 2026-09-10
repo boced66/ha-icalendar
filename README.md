@@ -31,8 +31,10 @@ Each config entry gives you one combined URL for all matching calendars. Include
 Every feed is tied to its config entry:
 
 ```
-/api/ics/<entry_id>/<secret>
+/api/ics/<entry_id>/<secret>.ics
 ```
+
+The trailing `.ics` matters for some subscribers (Google Calendar in particular) that decide how to treat a URL partly from its extension — without it, an app may silently accept the subscription and never actually show any events. Feeds created before this `.ics` suffix was added keep working at their original URL too (without the extension), so nothing breaks for existing subscriptions — but if you're seeing an empty calendar in an app you just added, re-copying the URL from the integration's reconfigure/options screen is the first thing to try.
 
 Both the local and external URL (if configured in Home Assistant) are shown in the integration's reconfigure/options screen, so you don't have to build them by hand. You can also rotate the secret from there if a URL ever leaks. 🔐
 
@@ -86,7 +88,7 @@ A few practical notes:
 
 ## ✅ Supported functionality
 
-- Secure iCalendar feed endpoint: `GET /api/ics/<config_entry_id>/<secret>`.
+- Secure iCalendar feed endpoint: `GET /api/ics/<config_entry_id>/<secret>.ics` (also reachable without the `.ics` suffix, for feeds created before it was added).
 - Exports events from every matching Home Assistant calendar entity.
 - Emits calendar-level `COLOR` from Home Assistant's calendar UI color settings, when available.
 
@@ -107,7 +109,7 @@ A few practical notes:
 ## 🧪 Example
 
 ```
-https://home.example.com/api/ics/01ABCDEF1234567890/your_long_secret
+https://home.example.com/api/ics/01ABCDEF1234567890/your_long_secret.ics
 ```
 
 ## ⚠️ Known limitations

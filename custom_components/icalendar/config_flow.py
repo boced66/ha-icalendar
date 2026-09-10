@@ -49,7 +49,7 @@ def _is_secret_valid(secret: str) -> bool:
 
 def _build_feed_urls(hass: HomeAssistant, entry_id: str, secret: str) -> tuple[str, str]:
     """Build local/internal and external URLs where available."""
-    path = f"{URL_PATH_PREFIX}/{entry_id}/{quote(secret, safe='')}"
+    path = f"{URL_PATH_PREFIX}/{entry_id}/{quote(secret, safe='')}.ics"
 
     local_base = hass.config.internal_url or ""
     external_base = hass.config.external_url or ""
