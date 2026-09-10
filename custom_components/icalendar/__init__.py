@@ -9,7 +9,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_SECRET, DOMAIN
 from .http import ICalendarView
-from .models import ICalendarRuntimeData, calendar_selection
+from .models import ICalendarRuntimeData, calendar_range, calendar_selection
 from .location import CONF_GEOCODING_URL, LocationResolver
 
 
@@ -27,6 +27,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up iCalendar from a config entry."""
     mode, entity_ids = calendar_selection(entry.data)
+    history_weeks, future_weeks = calendar_range(entry.data)
     store = Store(hass, 1, f"{DOMAIN}.{entry.entry_id}.events")
     cached = await store.async_load()
 
@@ -35,6 +36,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         selection_mode=mode,
         secret=entry.data[CONF_SECRET],
         geocoding_url=entry.data.get(CONF_GEOCODING_URL, ""),
+        history_weeks=history_weeks,
+        future_weeks=future_weeks,
         cache=cached or {},
         store=store,
     )

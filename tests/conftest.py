@@ -45,3 +45,9 @@ ha.exceptions.HomeAssistantError = type("HomeAssistantError", (Exception,), {})
 ha.helpers.storage.Store = MagicMock()
 
 ha.helpers.aiohttp_client.async_get_clientsession = MagicMock()
+
+ha.helpers.selector.NumberSelector = MagicMock()
+ha.helpers.selector.NumberSelectorConfig = dict
+ha.helpers.selector.NumberSelectorMode = type(
+    'NumberSelectorMode', (), {'BOX': 'box', 'SLIDER': 'slider'}
+)

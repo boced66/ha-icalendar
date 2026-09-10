@@ -89,7 +89,7 @@ def test_missing_source_uses_cache_while_other_source_refreshes():
     response = asyncio.run(view.get(None, 'entry', 'a' * 24))
     assert response.status == 200
     assert 'Cached' in response.text
-    view._fetch_events.assert_awaited_once_with('calendar.b')
+    view._fetch_events.assert_awaited_once_with('calendar.b', runtime)
     assert runtime.cache['calendar.b']['events'] == []
     assert runtime.store.async_delay_save.call_args.args[0]() == runtime.cache
 
@@ -115,7 +115,7 @@ def test_sources_fetch_concurrently_and_timeout_uses_cache(monkeypatch):
 
     async def run():
         started = asyncio.Event()
-        async def fetch(entity):
+        async def fetch(entity, runtime):
             if entity == 'calendar.a':
                 await started.wait()
                 await asyncio.Future()

@@ -2,12 +2,12 @@
   "domain": "icalendar",
   "name": "iCalendar API",
   "after_dependencies": ["calendar", "http"],
-  "codeowners": ["@codyc1515", "@chris-y"],
+  "codeowners": ["@boced66"],
   "config_flow": true,
-  "documentation": "https://github.com/chris-y/ha-icalendar",
+  "documentation": "https://github.com/boced66/ha-icalendar",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/codyc1515/ha-icalendar/issues",
+  "issue_tracker": "https://github.com/boced66/ha-icalendar/issues",
   "loggers": ["ical"],
   "requirements": ["ical==13.2.2"],
-  "version": "2.0.2"
+  "version": "2.1.0"
 }

@@ -18,7 +18,13 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_CALENDAR_ENTITY_ID,
     CONF_CALENDAR_ENTITY_IDS,
+    CONF_FUTURE_WEEKS,
+    CONF_HISTORY_WEEKS,
     CONF_SELECTION_MODE,
+    DEFAULT_FUTURE_WEEKS,
+    DEFAULT_HISTORY_WEEKS,
+    MAX_FUTURE_WEEKS,
+    MAX_HISTORY_WEEKS,
     MODE_INCLUDE,
     MODE_EXCLUDE,
     CONF_SECRET,
@@ -27,7 +33,7 @@ from .const import (
     URL_PATH_PREFIX,
 )
 
-from .models import calendar_selection
+from .models import calendar_range, calendar_selection
 from .location import CONF_GEOCODING_URL
 
 
@@ -86,6 +92,14 @@ def _selection_errors(hass: HomeAssistant, data: Mapping[str, Any]) -> dict[str,
     if any(not entity.startswith("calendar.") or hass.states.get(entity) is None
            for entity in entities):
         return {CONF_CALENDAR_ENTITY_IDS: "entity_not_found"}
+    try:
+        history_weeks, future_weeks = calendar_range(data)
+    except (TypeError, ValueError):
+        return {CONF_HISTORY_WEEKS: "invalid_range"}
+    if not (0 <= history_weeks <= MAX_HISTORY_WEEKS):
+        return {CONF_HISTORY_WEEKS: "invalid_range"}
+    if not (0 < future_weeks <= MAX_FUTURE_WEEKS):
+        return {CONF_FUTURE_WEEKS: "invalid_range"}
     return {}
 
 
@@ -114,6 +128,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
+            history_weeks, future_weeks = calendar_range(user_input)
             if errors := _selection_errors(self.hass, user_input):
                 return self.async_show_form(
                     step_id="user", data_schema=_build_user_schema(user_input), errors=errors
@@ -127,6 +142,8 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_GEOCODING_URL: user_input.get(CONF_GEOCODING_URL, "").strip(),
                 CONF_CALENDAR_ENTITY_IDS: entity_ids,
                 CONF_SELECTION_MODE: mode,
+                CONF_HISTORY_WEEKS: history_weeks,
+                CONF_FUTURE_WEEKS: future_weeks,
                 CONF_SECRET: secret,
             }
 
@@ -145,6 +162,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         local_url, external_url = _build_feed_urls(self.hass, entry.entry_id, existing_secret)
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
+            history_weeks, future_weeks = calendar_range(user_input)
             if errors := _selection_errors(self.hass, user_input):
                 return self.async_show_form(
                     step_id="reconfigure",
@@ -166,6 +184,8 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_GEOCODING_URL: user_input.get(CONF_GEOCODING_URL, "").strip(),
                 CONF_CALENDAR_ENTITY_IDS: entity_ids,
                 CONF_SELECTION_MODE: mode,
+                CONF_HISTORY_WEEKS: history_weeks,
+                CONF_FUTURE_WEEKS: future_weeks,
             }
 
             updated_data.pop(CONF_CALENDAR_ENTITY_ID, None)
@@ -217,6 +237,7 @@ class ICalendarOptionsFlow(config_entries.OptionsFlow):
         )
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
+            history_weeks, future_weeks = calendar_range(user_input)
             errors = _selection_errors(self.hass, user_input)
             new_secret = user_input.get(CONF_SECRET)
             if new_secret and not _is_secret_valid(new_secret):
@@ -243,6 +264,8 @@ class ICalendarOptionsFlow(config_entries.OptionsFlow):
                 CONF_GEOCODING_URL: user_input.get(CONF_GEOCODING_URL, "").strip(),
                 CONF_CALENDAR_ENTITY_IDS: entity_ids,
                 CONF_SELECTION_MODE: mode,
+                CONF_HISTORY_WEEKS: history_weeks,
+                CONF_FUTURE_WEEKS: future_weeks,
                 CONF_SECRET: new_secret or existing_secret,
             }
             updated_data.pop(CONF_CALENDAR_ENTITY_ID, None)
@@ -266,6 +289,7 @@ class ICalendarOptionsFlow(config_entries.OptionsFlow):
 def _build_user_schema(user_input: Mapping[str, Any] | None = None) -> vol.Schema:
     """Build the calendar selection schema."""
     mode, entity_ids = calendar_selection(user_input or {})
+    history_weeks, future_weeks = calendar_range(user_input or {})
     return vol.Schema({
         vol.Optional(CONF_GEOCODING_URL, default=(user_input or {}).get(CONF_GEOCODING_URL, "")): str,
         vol.Required(CONF_SELECTION_MODE, default=mode): selector.SelectSelector(
@@ -275,6 +299,18 @@ def _build_user_schema(user_input: Mapping[str, Any] | None = None) -> vol.Schem
         ),
         vol.Required(CONF_CALENDAR_ENTITY_IDS, default=entity_ids): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["calendar"], multiple=True)
+        ),
+        vol.Required(CONF_HISTORY_WEEKS, default=history_weeks): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0, max=MAX_HISTORY_WEEKS, step=1, mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement="weeks",
+            )
+        ),
+        vol.Required(CONF_FUTURE_WEEKS, default=future_weeks): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=1, max=MAX_FUTURE_WEEKS, step=1, mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement="weeks",
+            )
         ),
     })
 

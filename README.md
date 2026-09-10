@@ -1,104 +1,149 @@
-# iCalendar API integration for Home Assistant
-Generates an iCalendar (.ics) link that you can use to view your Home Assistant calendars in another app.
+# 📅 iCalendar API integration for Home Assistant
 
-## Installation
+Turn your Home Assistant calendars into a proper iCalendar (`.ics`) feed you can subscribe to from pretty much any calendar app — Apple Calendar, Google Calendar, Outlook, you name it.
+
+> Fork of [chris-y/ha-icalendar](https://github.com/chris-y/ha-icalendar) with a configurable history/future time window. 🕰️
+
+## 🚀 Installation
+
 ### HACS (recommended)
-1. [Install HACS](https://hacs.xyz/docs/setup/download), if you did not already.
-2. [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=chris-y&repository=ha-icalendar&category=integration)
-3. Press the Download button.
-4. Restart Home Assistant.
+1. [Install HACS](https://hacs.xyz/docs/setup/download) if you haven't already.
+2. Click the button below — it'll open HACS and add this repo for you ✨
 
-### Manually
-Copy all files in the `custom_components/icalendar` folder to your Home Assistant folder `config/custom_components/icalendar`.
+   [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=boced66&repository=ha-icalendar&category=integration)
+3. Hit **Download**.
+4. Restart Home Assistant. ♻️
 
-## Setup
+### Manual install
+Copy the `custom_components/icalendar` folder into your Home Assistant `config/custom_components/icalendar` folder, then restart.
+
+## 🛠️ Setup
+
 1. Go to **Settings > Devices & Services > Integrations**.
-2. Add **iCalendar API**.
-3. Choose **Include selected calendars** or **Exclude selected calendars**.
-4. Select the `calendar.*` entities to include or exclude.
+2. Click **Add integration**, search for **iCalendar API**.
+3. Pick **Include selected calendars** or **Exclude selected calendars**.
+4. Select which `calendar.*` entities you want in (or out).
 
-Each config entry provides one URL combining events from all matching calendars. Include requires at least one calendar. Exclude with no calendars selected exports all calendars. Exclude mode automatically includes newly added calendars. Existing single-calendar feeds keep their URLs and behave as include selections.
+Each config entry gives you one combined URL for all matching calendars. Include mode needs at least one calendar selected. Exclude mode with nothing selected exports everything, and automatically picks up any calendar you add later. Old single-calendar feeds keep working exactly as before, as include selections.
 
-## URL format
-The feed URL is now tied to the config entry ID:
+## 🔗 URL format
 
-- `/api/ics/<entry_id>/<secret>`
+Every feed is tied to its config entry:
 
-In the integration reconfigure/options UI, both local and external URL variants are shown (if configured in Home Assistant). Secret rotation is available from reconfigure.
+```
+/api/ics/<entry_id>/<secret>
+```
 
-## Additional configuration
-For feeds resolving to one calendar, calendar color is taken from Home Assistant's calendar entity UI settings. Combined feeds omit calendar-level color.
-Set it in the calendar entity settings. CSS3 color names are emitted as `COLOR`; hex colors use the `X-APPLE-CALENDAR-COLOR` extension (client support varies).
+Both the local and external URL (if configured in Home Assistant) are shown in the integration's reconfigure/options screen, so you don't have to build them by hand. You can also rotate the secret from there if a URL ever leaks. 🔐
 
-## Apple Calendar locations
-Apple Calendar's enhanced location field needs coordinates; Home Assistant's `calendar.get_events` normally supplies only an address. Configure **Address lookup URL** in the feed settings with a Nominatim-compatible search endpoint (for example, your own `https://geocoder.example/search`) to resolve text such as `199 Clarence Street, Riccarton`. Leave the setting empty to disable lookup. Include the city and country in addresses when possible to avoid ambiguity.
+## ⏳ How much history and future do I get?
 
-Resolved events retain their original `LOCATION` and also include standard `GEO` and Apple's `X-APPLE-STRUCTURED-LOCATION`, with the address, title, and a 100-metre radius. These provide coordinates for supported clients' maps and directions. Apple Calendar's actual presentation depends on the client; this has not been verified in the Apple Calendar UI.
+By default, your feed includes **4 weeks in the past** and **52 weeks in the future** — but you're not stuck with that! Right from setup, reconfigure, or options, you can dial in:
 
-- Location text is sent to the configured provider. Choose a provider appropriate for the privacy of your calendars.
-- Lookups happen on subscription refresh, with at most one new request every 15 seconds across all feeds and a three-second timeout. Additional addresses resolve on later refreshes; cached addresses are available immediately.
-- Successful lookups are cached for 90 days across restarts; missing or ambiguous results for seven days. Provider errors back off for a minute. Unresolved locations remain plain text and do not prevent the feed from loading.
-- The shared cache holds up to 2,000 lookups, keyed by a hash of endpoint and address. Changing the provider uses separate cached results. Disabling lookup stops emitting enhanced metadata for that feed.
+- **Past events (weeks)** — how far back to reach, from 0 (no past events at all) up to 520 weeks (10 years).
+- **Future events (weeks)** — how far ahead to look, from 1 up to 520 weeks.
 
-**Public Nominatim service:** deliberately review the [usage policy](https://operations.osmfoundation.org/policies/nominatim/) before choosing `https://nominatim.openstreetmap.org/search`. It prohibits confidential/personal data submissions and imposes application-wide limits, identification, caching, and attribution requirements. Regular requests are restricted to four per minute, and distributed bulk use is prohibited. The limiter here is per Home Assistant instance, so it cannot enforce limits across multiple installations; use a private or suitable hosted provider for broader deployment. OpenStreetMap geocoding data is © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), available under the ODbL.
+Want a full year of history for a "look back" view? Set it to 52. Just need next month's agenda and nothing else? Future = 4 is plenty. It's your call. 🎛️
 
-## Configuration parameters
-- Setup:
+## 🎨 Calendar colors
+
+If a feed resolves to a single calendar, its color comes straight from that calendar entity's Home Assistant UI settings — set it there and it'll show up in the feed. Combined feeds (multiple calendars in one URL) skip calendar-level color, since there's no single color that would make sense.
+
+CSS3 color names come through as `COLOR`; hex colors use the `X-APPLE-CALENDAR-COLOR` extension (support for this varies by client).
+
+## 🍏 Apple Calendar locations
+
+Apple Calendar's fancy location field wants coordinates, but Home Assistant's `calendar.get_events` normally only gives you a plain address. Configure an **Address lookup URL** in the feed settings (a Nominatim-compatible search endpoint, e.g. your own `https://geocoder.example/search`) and addresses like `199 Clarence Street, Riccarton` get resolved automatically. Leave it empty to disable this — it's entirely optional. Including city and country in addresses helps avoid ambiguous matches.
+
+Resolved events keep their original `LOCATION` and also gain standard `GEO` plus Apple's `X-APPLE-STRUCTURED-LOCATION` (address, title, and a 100 m radius), which supported clients use for maps and directions. Apple Calendar's actual display of this hasn't been verified in the real app, so your mileage may vary.
+
+A few practical notes:
+- 📤 Location text is sent to whichever provider you configure — pick one that fits your privacy comfort level.
+- ⏱️ Lookups happen on subscription refresh: at most one new request every 15 seconds across all feeds, 3-second timeout. Unresolved addresses just try again on the next refresh; cached ones show up instantly.
+- 💾 Successful lookups are cached 90 days across restarts; misses/ambiguous results for 7 days. Provider errors back off for a minute. A location that never resolves stays as plain text — it never blocks the feed from loading.
+- 🗃️ The shared cache holds up to 2,000 lookups, keyed by provider + address. Switching providers starts a fresh cache; disabling lookup just stops adding the extra metadata.
+
+**Using the public Nominatim service?** Please read the [usage policy](https://operations.osmfoundation.org/policies/nominatim/) first — no confidential/personal data, attribution required, and a hard limit of 4 requests/minute with no distributed bulk use. This integration's rate limiter only applies per Home Assistant instance, so it can't enforce policy across multiple installs — for anything beyond light personal use, run your own or a suitably licensed hosted instance. OpenStreetMap geocoding data is © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), under the ODbL.
+
+## ⚙️ Configuration parameters
+
+- **Setup**
   - `selection_mode`: `include` or `exclude`.
-  - `calendar_entity_ids`: Calendars to include or exclude.
-- Reconfigure:
-  - `selection_mode` and `calendar_entity_ids`: Change the selection without changing the URL.
-  - `secret`: Optional new secret (minimum 20 ASCII letters, digits, underscores, or hyphens). Leave blank to keep current secret.
-- Options:
-  - Change the calendar selection, view feed URLs, and optionally rotate the secret.
+  - `calendar_entity_ids`: calendars to include or exclude.
+  - `history_weeks`: how far back to include past events, in weeks. Default `4` (~a month). `0` excludes past events entirely.
+  - `future_weeks`: how far ahead to include upcoming events, in weeks. Default `52` (~a year).
+- **Reconfigure**
+  - `selection_mode` / `calendar_entity_ids`: change the selection without changing the URL.
+  - `history_weeks` / `future_weeks`: change the exported time window without changing the URL.
+  - `secret`: optional new secret (min. 20 ASCII letters/digits/underscores/hyphens). Leave blank to keep the current one.
+- **Options**
+  - Same as reconfigure, plus viewing the current feed URLs — all without leaving the integration page.
 
-## Installation parameters
-- Home Assistant `internal_url` and/or `external_url` should be configured to display full feed URLs in UI.
-- Calendar selection requires registered entities; integration startup does not wait for source calendars.
+## 🧩 Installation parameters
 
-## Supported functionality
-- Provides a secure iCalendar feed endpoint:
-  - `GET /api/ics/<config_entry_id>/<secret>`
-- Exports calendar events from all matching Home Assistant calendar entities.
-- Emits calendar-level `COLOR` from Home Assistant calendar UI color settings when available.
+- Set Home Assistant's `internal_url` and/or `external_url` so the UI can show you full, ready-to-copy feed URLs.
+- Calendar selection needs entities to already be registered; startup doesn't wait around for source calendars to appear.
 
-## Data update behavior
-- Setup restores locally saved events without fetching or waiting for source calendars.
-- Feed requests fetch calendars concurrently via `calendar.get_events`, with a 15-second timeout per source.
-- Successful results (including empty calendars) are saved per entry and source. Missing, unavailable, failing, or timed-out sources use their last saved events. Cached events can be stale and retain the window from the last successful fetch.
-- If any selected source has no successful snapshot yet, its feed returns HTTP 503 so subscribers do not interpret missing events as deletions. Other feed entries remain independent.
-- Exclude mode retains previously cached sources during startup even before their entities appear. Remove unwanted sources by excluding them; deleting an entry removes its saved events.
-- Time window returned is 4 weeks of history and 52 weeks in the future.
+## ✅ Supported functionality
 
-## Use cases
-- Subscribe to Home Assistant calendars from external calendar clients that support ICS URLs.
-- Share read-only calendar timelines using per-entry secrets.
+- Secure iCalendar feed endpoint: `GET /api/ics/<config_entry_id>/<secret>`.
+- Exports events from every matching Home Assistant calendar entity.
+- Emits calendar-level `COLOR` from Home Assistant's calendar UI color settings, when available.
 
-## Example
-- `https://home.example.com/api/ics/01ABCDEF1234567890/your_long_secret`
+## 🔄 Data update behavior
 
-## Known limitations
-- Feed security is URL-secret based; URLs should be treated as credentials.
-- Event IDs are stable for unchanged occurrences and scoped to their source calendar. Without a source UID, identity uses the summary and start time; edits to these fields change the ID. Indistinguishable events from the same source cannot be distinguished.
-- Calendar data is read at request time; response latency depends on calendar backend responsiveness.
+- On startup, previously saved events are restored instantly — no waiting on source calendars.
+- Feed requests fetch every source calendar concurrently via `calendar.get_events`, 15-second timeout per source.
+- Successful fetches (even empty ones) get saved per entry/source. If a source is missing, unavailable, failing, or timed out, its last saved snapshot is used instead — which can go stale if a source stays broken for a while.
+- If a selected source has never successfully synced, the whole feed returns `503` rather than silently dropping events (so subscribers don't mistake "not fetched yet" for "deleted"). Other feed entries aren't affected.
+- Exclude mode keeps previously cached sources around during startup, even before their entities show up. To drop a source for good, exclude it explicitly — or just delete the config entry to wipe its saved events.
+- The exported time window defaults to 4 weeks back / 52 weeks ahead, and is fully configurable per feed (up to 520 weeks either way) from setup, reconfigure, or options. 🕰️
 
-## Troubleshooting
-- `401 Unauthorized`: URL secret does not match the config entry secret.
-- `403 Forbidden`: Invalid path/secret format or non-calendar entity.
-- `404 Not Found`: Entry ID does not exist.
-- `503 Service Unavailable`: Entry is unloaded, or a source is unavailable with no cached results. Empty calendars return a valid feed.
-- If UI does not show full feed URLs, set `internal_url` / `external_url` in Home Assistant network settings.
+## 💡 Use cases
 
-## Removal instructions
+- Subscribe to your Home Assistant calendars from any external app that speaks ICS.
+- Share a read-only view of your calendars with someone else, using a per-entry secret URL.
+
+## 🧪 Example
+
+```
+https://home.example.com/api/ics/01ABCDEF1234567890/your_long_secret
+```
+
+## ⚠️ Known limitations
+
+- Feed security is secret-in-URL based — treat these URLs like passwords.
+- Event IDs stay stable for unchanged occurrences, scoped to their source calendar. Without a source UID, identity is derived from summary + start time, so editing either changes the ID. Genuinely identical events from the same source can't be told apart.
+- Calendar data is read live at request time, so response speed depends on how fast your calendar backend answers.
+
+## 🩺 Troubleshooting
+
+| Response | What it means |
+|---|---|
+| `401 Unauthorized` | The secret in the URL doesn't match the config entry's secret. |
+| `403 Forbidden` | Malformed path/secret, or a non-calendar entity was referenced. |
+| `404 Not Found` | That entry ID doesn't exist. |
+| `503 Service Unavailable` | The entry is unloaded, or a source has no cached results yet. (An empty calendar still returns a valid `200` feed.) |
+
+If the UI isn't showing you full feed URLs, double-check `internal_url` / `external_url` under Home Assistant's network settings.
+
+## 🗑️ Removal instructions
+
 1. Go to **Settings > Devices & Services > Integrations**.
 2. Open **iCalendar API**.
 3. Delete the config entry.
-4. Update/remove ICS subscriptions that used that entry URL.
+4. Don't forget to update or remove any ICS subscriptions that pointed at that entry's URL!
 
-## Security notes
-- Secret checks use constant-time comparison.
-- iCalendar output now escapes reserved characters and folds long lines to improve parser safety and compatibility.
+## 🔒 Security notes
 
-## Development tests
-Run `python -m pip install -r requirements-test.txt`, then `python -m pytest`.
-Tests use small Home Assistant boundary doubles and the real pinned ICS library; they do not replace testing in a running Home Assistant instance.
+- Secret checks use constant-time comparison, to avoid timing attacks.
+- iCalendar output escapes reserved characters and folds long lines for better parser safety and compatibility.
+
+## 🧑‍💻 Development tests
+
+```bash
+python -m pip install -r requirements-test.txt
+python -m pytest
+```
+
+Tests run against small Home Assistant boundary doubles plus the real pinned ICS library — handy for fast iteration, but no substitute for testing against a real running Home Assistant instance. 🏡

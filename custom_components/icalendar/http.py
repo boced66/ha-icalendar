@@ -99,7 +99,7 @@ class ICalendarView(HomeAssistantView):
         if state is not None and getattr(state, "state", None) not in ("unavailable", "unknown"):
             try:
                 async with asyncio.timeout(FETCH_TIMEOUT):
-                    events = await self._fetch_events(entity_id)
+                    events = await self._fetch_events(entity_id, runtime)
                 if events is not None:
                     runtime.cache[entity_id] = {"name": state.name, "events": events}
                     if runtime.store is not None:
@@ -108,13 +108,18 @@ class ICalendarView(HomeAssistantView):
                 _LOGGER.debug("Calendar %s unavailable; using cached events", entity_id)
         return runtime.cache.get(entity_id)
 
-    async def _fetch_events(self, entity_id: str) -> list[dict[str, Any]] | None:
+    async def _fetch_events(
+        self, entity_id: str, runtime: ICalendarRuntimeData | None = None
+    ) -> list[dict[str, Any]] | None:
         """Fetch events from Home Assistant calendar service."""
         from datetime import datetime, timedelta, timezone
         from .const import DEFAULT_FUTURE_WEEKS, DEFAULT_HISTORY_WEEKS
 
-        start = datetime.now(timezone.utc) - timedelta(weeks=DEFAULT_HISTORY_WEEKS)
-        end = datetime.now(timezone.utc) + timedelta(weeks=DEFAULT_FUTURE_WEEKS)
+        history_weeks = runtime.history_weeks if runtime is not None else DEFAULT_HISTORY_WEEKS
+        future_weeks = runtime.future_weeks if runtime is not None else DEFAULT_FUTURE_WEEKS
+
+        start = datetime.now(timezone.utc) - timedelta(weeks=history_weeks)
+        end = datetime.now(timezone.utc) + timedelta(weeks=future_weeks)
 
         events_response = await self.hass.services.async_call(
             "calendar",

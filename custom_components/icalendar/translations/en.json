@@ -10,7 +10,8 @@
       "entity_not_found": "Selected calendar entity is unavailable. Ensure it is loaded and try again.",
       "no_calendars": "Select at least one calendar to include.",
       "invalid_selection_mode": "Choose include or exclude.",
-      "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment."
+      "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment.",
+      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum."
     },
     "step": {
       "user": {
@@ -19,10 +20,14 @@
         "data": {
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
-          "geocoding_url": "Address lookup URL (optional)"
+          "geocoding_url": "Address lookup URL (optional)",
+          "history_weeks": "Past events (weeks)",
+          "future_weeks": "Future events (weeks)"
         },
         "data_description": {
-          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements."
+          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
+          "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
+          "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."
         }
       },
       "reconfigure": {
@@ -32,10 +37,14 @@
           "secret": "New secret key (optional; minimum 20 chars)",
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
-          "geocoding_url": "Address lookup URL (optional)"
+          "geocoding_url": "Address lookup URL (optional)",
+          "history_weeks": "Past events (weeks)",
+          "future_weeks": "Future events (weeks)"
         },
         "data_description": {
-          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements."
+          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
+          "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
+          "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."
         }
       }
     }
@@ -47,7 +56,8 @@
       "no_calendars": "Select at least one calendar to include.",
       "invalid_selection_mode": "Choose include or exclude.",
       "already_configured": "This calendar selection is already configured.",
-      "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment."
+      "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment.",
+      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum."
     },
     "step": {
       "init": {
@@ -57,10 +67,14 @@
           "secret": "New secret key (optional; minimum 20 chars)",
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
-          "geocoding_url": "Address lookup URL (optional)"
+          "geocoding_url": "Address lookup URL (optional)",
+          "history_weeks": "Past events (weeks)",
+          "future_weeks": "Future events (weeks)"
         },
         "data_description": {
-          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements."
+          "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
+          "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
+          "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."
         }
       }
     }

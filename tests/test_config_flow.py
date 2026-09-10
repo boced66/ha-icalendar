@@ -11,7 +11,8 @@ from homeassistant.helpers import selector
 
 @pytest.fixture
 def settings(monkeypatch):
-    for name in ('SelectSelector', 'SelectSelectorConfig', 'EntitySelector', 'EntitySelectorConfig'):
+    for name in ('SelectSelector', 'SelectSelectorConfig', 'EntitySelector', 'EntitySelectorConfig',
+                 'NumberSelector', 'NumberSelectorConfig'):
         monkeypatch.setattr(selector, name, Mock(return_value=lambda value: value), raising=False)
     entry = SimpleNamespace(entry_id='feed', data={
         'calendar_entity_id': 'calendar.original', 'secret': 'a' * 24, 'geocoding_url': '',
@@ -39,7 +40,7 @@ def test_settings_shows_legacy_selection_and_url(settings):
     result = asyncio.run(settings.async_step_init())
     assert defaults(result) == {
         'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
-        'secret': 'a' * 24, 'geocoding_url': '',
+        'secret': 'a' * 24, 'geocoding_url': '', 'history_weeks': 4, 'future_weeks': 52,
     }
     assert 'https://ha.local/api/ics/feed/' in result['description_placeholders']['url_block']
 
@@ -57,9 +58,21 @@ def test_settings_saves_selection_and_reloads(settings, mode, entities, secret):
     assert saved['data'] == {
         'selection_mode': mode, 'calendar_entity_ids': entities,
         'secret': secret or 'a' * 24, 'geocoding_url': '',
+        'history_weeks': 4, 'future_weeks': 52,
     }
     assert mode in saved['title']
     settings.hass.config_entries.async_reload.assert_awaited_once_with('feed')
+
+
+def test_settings_saves_custom_history_and_future_range(settings):
+    result = asyncio.run(settings.async_step_init({
+        'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
+        'history_weeks': 52, 'future_weeks': 8,
+    }))
+    assert result['type'] == 'create_entry'
+    saved = settings.hass.config_entries.async_update_entry.call_args.kwargs['data']
+    assert saved['history_weeks'] == 52
+    assert saved['future_weeks'] == 8
 
 
 @pytest.mark.parametrize('mode,entities,secret,error', [
@@ -72,9 +85,26 @@ def test_invalid_settings_preserve_input_without_saving(settings, mode, entities
     data = {'selection_mode': mode, 'calendar_entity_ids': entities, 'secret': secret}
     result = asyncio.run(settings.async_step_init(data))
     assert error in result['errors'].values()
-    assert defaults(result) == {**data, 'geocoding_url': ''}
+    assert defaults(result) == {**data, 'geocoding_url': '', 'history_weeks': 4, 'future_weeks': 52}
     settings.hass.config_entries.async_update_entry.assert_not_called()
     settings.hass.config_entries.async_reload.assert_not_awaited()
+
+
+@pytest.mark.parametrize('history_weeks,future_weeks', [
+    (-1, 52),
+    (4, 0),
+    (4, -5),
+    (600, 52),
+    (4, 600),
+])
+def test_invalid_range_preserves_input_without_saving(settings, history_weeks, future_weeks):
+    data = {
+        'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
+        'history_weeks': history_weeks, 'future_weeks': future_weeks,
+    }
+    result = asyncio.run(settings.async_step_init(data))
+    assert 'invalid_range' in result['errors'].values()
+    settings.hass.config_entries.async_update_entry.assert_not_called()
 
 
 def test_duplicate_selection_is_rejected(settings):
