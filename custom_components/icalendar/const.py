@@ -21,3 +21,6 @@ MODE_EXCLUDE = "exclude"
 
 CONF_HISTORY_WEEKS = "history_weeks"
 CONF_FUTURE_WEEKS = "future_weeks"
+
+CONF_FEED_NAME = "feed_name"
+MAX_FEED_NAME_LENGTH = 100

@@ -11,13 +11,15 @@
       "no_calendars": "Sélectionnez au moins un calendrier à inclure.",
       "invalid_selection_mode": "Choisissez inclure ou exclure.",
       "invalid_geocoding_url": "Indiquez un point d'accès de recherche Nominatim en HTTP(S), sans identifiants, paramètres de requête ni fragment.",
-      "invalid_range": "L'historique doit être de 0 semaine ou plus et la période future d'au moins 1 semaine, chacun dans la limite maximale autorisée."
+      "invalid_range": "L'historique doit être de 0 semaine ou plus et la période future d'au moins 1 semaine, chacun dans la limite maximale autorisée.",
+      "feed_name_too_long": "Le nom du flux doit contenir 100 caractères maximum."
     },
     "step": {
       "user": {
         "title": "Ajouter un flux iCalendar",
         "description": "Créez une URL iCalendar sécurisée unique pour plusieurs calendriers. Le mode Inclure n'exporte que les calendriers sélectionnés. Le mode Exclure exporte tous les calendriers sauf ceux sélectionnés ; laissez la liste vide pour tous les exporter.",
         "data": {
+          "feed_name": "Nom du flux (facultatif)",
           "selection_mode": "Mode de sélection",
           "calendar_entity_ids": "Calendriers",
           "geocoding_url": "URL de recherche d'adresse (facultatif)",
@@ -25,6 +27,7 @@
           "future_weeks": "Événements futurs (semaines)"
         },
         "data_description": {
+          "feed_name": "Nom affiché pour ce flux de calendrier dans les applications comme Google Calendar ou Apple Calendar. Laissez vide pour utiliser le nom par défaut.",
           "geocoding_url": "Point d'accès de recherche compatible Nominatim. Les lieux des événements y sont envoyés pour les cartes d'Apple Calendar. Laissez vide pour désactiver. Voir la documentation pour les exigences du fournisseur.",
           "history_weeks": "Jusqu'où remonter pour inclure les événements passés, en semaines (par ex. 4 pour un mois, 52 pour un an). Mettez 0 pour exclure les événements passés.",
           "future_weeks": "Jusqu'où aller dans le futur pour inclure les événements à venir, en semaines (par ex. 4 pour un mois, 52 pour un an)."
@@ -35,6 +38,7 @@
         "description": "{url_block}\n\nLaissez la clé secrète vide pour conserver l'actuelle. Le mode Inclure n'exporte que les calendriers sélectionnés. Le mode Exclure exporte tous les calendriers sauf ceux sélectionnés ; laissez la liste vide pour tous les exporter.",
         "data": {
           "secret": "Nouvelle clé secrète (facultatif ; minimum 20 caractères)",
+          "feed_name": "Nom du flux (facultatif)",
           "selection_mode": "Mode de sélection",
           "calendar_entity_ids": "Calendriers",
           "geocoding_url": "URL de recherche d'adresse (facultatif)",
@@ -42,6 +46,7 @@
           "future_weeks": "Événements futurs (semaines)"
         },
         "data_description": {
+          "feed_name": "Nom affiché pour ce flux de calendrier dans les applications comme Google Calendar ou Apple Calendar. Laissez vide pour utiliser le nom par défaut.",
           "geocoding_url": "Point d'accès de recherche compatible Nominatim. Les lieux des événements y sont envoyés pour les cartes d'Apple Calendar. Laissez vide pour désactiver. Voir la documentation pour les exigences du fournisseur.",
           "history_weeks": "Jusqu'où remonter pour inclure les événements passés, en semaines (par ex. 4 pour un mois, 52 pour un an). Mettez 0 pour exclure les événements passés.",
           "future_weeks": "Jusqu'où aller dans le futur pour inclure les événements à venir, en semaines (par ex. 4 pour un mois, 52 pour un an)."
@@ -57,7 +62,8 @@
       "invalid_selection_mode": "Choisissez inclure ou exclure.",
       "already_configured": "Cette sélection de calendriers est déjà configurée.",
       "invalid_geocoding_url": "Indiquez un point d'accès de recherche Nominatim en HTTP(S), sans identifiants, paramètres de requête ni fragment.",
-      "invalid_range": "L'historique doit être de 0 semaine ou plus et la période future d'au moins 1 semaine, chacun dans la limite maximale autorisée."
+      "invalid_range": "L'historique doit être de 0 semaine ou plus et la période future d'au moins 1 semaine, chacun dans la limite maximale autorisée.",
+      "feed_name_too_long": "Le nom du flux doit contenir 100 caractères maximum."
     },
     "step": {
       "init": {
@@ -65,6 +71,7 @@
         "description": "{url_block}\n\nLaissez la clé secrète vide pour conserver l'actuelle. Le mode Inclure n'exporte que les calendriers sélectionnés. Le mode Exclure exporte tous les calendriers sauf ceux sélectionnés ; laissez la liste vide pour tous les exporter.",
         "data": {
           "secret": "Nouvelle clé secrète (facultatif ; minimum 20 caractères)",
+          "feed_name": "Nom du flux (facultatif)",
           "selection_mode": "Mode de sélection",
           "calendar_entity_ids": "Calendriers",
           "geocoding_url": "URL de recherche d'adresse (facultatif)",
@@ -72,6 +79,7 @@
           "future_weeks": "Événements futurs (semaines)"
         },
         "data_description": {
+          "feed_name": "Nom affiché pour ce flux de calendrier dans les applications comme Google Calendar ou Apple Calendar. Laissez vide pour utiliser le nom par défaut.",
           "geocoding_url": "Point d'accès de recherche compatible Nominatim. Les lieux des événements y sont envoyés pour les cartes d'Apple Calendar. Laissez vide pour désactiver. Voir la documentation pour les exigences du fournisseur.",
           "history_weeks": "Jusqu'où remonter pour inclure les événements passés, en semaines (par ex. 4 pour un mois, 52 pour un an). Mettez 0 pour exclure les événements passés.",
           "future_weeks": "Jusqu'où aller dans le futur pour inclure les événements à venir, en semaines (par ex. 4 pour un mois, 52 pour un an)."

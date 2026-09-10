@@ -18,11 +18,13 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_CALENDAR_ENTITY_ID,
     CONF_CALENDAR_ENTITY_IDS,
+    CONF_FEED_NAME,
     CONF_FUTURE_WEEKS,
     CONF_HISTORY_WEEKS,
     CONF_SELECTION_MODE,
     DEFAULT_FUTURE_WEEKS,
     DEFAULT_HISTORY_WEEKS,
+    MAX_FEED_NAME_LENGTH,
     MAX_FUTURE_WEEKS,
     MAX_HISTORY_WEEKS,
     MODE_INCLUDE,
@@ -33,7 +35,7 @@ from .const import (
     URL_PATH_PREFIX,
 )
 
-from .models import calendar_range, calendar_selection
+from .models import calendar_range, calendar_selection, feed_name
 from .location import CONF_GEOCODING_URL
 
 
@@ -70,8 +72,10 @@ def _build_urls_text(local_url: str, external_url: str) -> str:
     return "\n".join(lines)
 
 
-def _title_for_selection(mode: str, entity_ids: list[str]) -> str:
+def _title_for_selection(mode: str, entity_ids: list[str], custom_name: str = "") -> str:
     """Build a title describing the feed selection."""
+    if custom_name:
+        return custom_name
     return f"{NAME} ({mode}: {', '.join(entity_ids) or 'none'})"
 
 
@@ -100,6 +104,8 @@ def _selection_errors(hass: HomeAssistant, data: Mapping[str, Any]) -> dict[str,
         return {CONF_HISTORY_WEEKS: "invalid_range"}
     if not (0 < future_weeks <= MAX_FUTURE_WEEKS):
         return {CONF_FUTURE_WEEKS: "invalid_range"}
+    if len(feed_name(data)) > MAX_FEED_NAME_LENGTH:
+        return {CONF_FEED_NAME: "feed_name_too_long"}
     return {}
 
 
@@ -129,6 +135,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
             history_weeks, future_weeks = calendar_range(user_input)
+            custom_name = feed_name(user_input)
             if errors := _selection_errors(self.hass, user_input):
                 return self.async_show_form(
                     step_id="user", data_schema=_build_user_schema(user_input), errors=errors
@@ -144,11 +151,12 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SELECTION_MODE: mode,
                 CONF_HISTORY_WEEKS: history_weeks,
                 CONF_FUTURE_WEEKS: future_weeks,
+                CONF_FEED_NAME: custom_name,
                 CONF_SECRET: secret,
             }
 
             return self.async_create_entry(
-                title=_title_for_selection(mode, entity_ids),
+                title=_title_for_selection(mode, entity_ids, custom_name),
                 data=data,
             )
 
@@ -163,6 +171,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
             history_weeks, future_weeks = calendar_range(user_input)
+            custom_name = feed_name(user_input)
             if errors := _selection_errors(self.hass, user_input):
                 return self.async_show_form(
                     step_id="reconfigure",
@@ -186,6 +195,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SELECTION_MODE: mode,
                 CONF_HISTORY_WEEKS: history_weeks,
                 CONF_FUTURE_WEEKS: future_weeks,
+                CONF_FEED_NAME: custom_name,
             }
 
             updated_data.pop(CONF_CALENDAR_ENTITY_ID, None)
@@ -205,7 +215,7 @@ class ICalendarConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             self.hass.config_entries.async_update_entry(
                 entry,
-                title=_title_for_selection(mode, entity_ids),
+                title=_title_for_selection(mode, entity_ids, custom_name),
                 data=updated_data,
             )
             await self.hass.config_entries.async_reload(entry.entry_id)
@@ -238,6 +248,7 @@ class ICalendarOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             mode, entity_ids = calendar_selection(user_input)
             history_weeks, future_weeks = calendar_range(user_input)
+            custom_name = feed_name(user_input)
             errors = _selection_errors(self.hass, user_input)
             new_secret = user_input.get(CONF_SECRET)
             if new_secret and not _is_secret_valid(new_secret):
@@ -266,12 +277,13 @@ class ICalendarOptionsFlow(config_entries.OptionsFlow):
                 CONF_SELECTION_MODE: mode,
                 CONF_HISTORY_WEEKS: history_weeks,
                 CONF_FUTURE_WEEKS: future_weeks,
+                CONF_FEED_NAME: custom_name,
                 CONF_SECRET: new_secret or existing_secret,
             }
             updated_data.pop(CONF_CALENDAR_ENTITY_ID, None)
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
-                title=_title_for_selection(mode, entity_ids),
+                title=_title_for_selection(mode, entity_ids, custom_name),
                 data=updated_data,
             )
             await self.hass.config_entries.async_reload(self.config_entry.entry_id)
@@ -291,6 +303,7 @@ def _build_user_schema(user_input: Mapping[str, Any] | None = None) -> vol.Schem
     mode, entity_ids = calendar_selection(user_input or {})
     history_weeks, future_weeks = calendar_range(user_input or {})
     return vol.Schema({
+        vol.Optional(CONF_FEED_NAME, default=feed_name(user_input or {})): str,
         vol.Optional(CONF_GEOCODING_URL, default=(user_input or {}).get(CONF_GEOCODING_URL, "")): str,
         vol.Required(CONF_SELECTION_MODE, default=mode): selector.SelectSelector(
             selector.SelectSelectorConfig(

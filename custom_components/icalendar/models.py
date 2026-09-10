@@ -7,8 +7,9 @@ from collections.abc import Mapping
 from typing import Any
 
 from .const import (CONF_CALENDAR_ENTITY_ID, CONF_CALENDAR_ENTITY_IDS,
-                    CONF_FUTURE_WEEKS, CONF_HISTORY_WEEKS, CONF_SELECTION_MODE,
-                    DEFAULT_FUTURE_WEEKS, DEFAULT_HISTORY_WEEKS, MODE_INCLUDE)
+                    CONF_FEED_NAME, CONF_FUTURE_WEEKS, CONF_HISTORY_WEEKS,
+                    CONF_SELECTION_MODE, DEFAULT_FUTURE_WEEKS,
+                    DEFAULT_HISTORY_WEEKS, MODE_INCLUDE)
 
 
 def calendar_selection(data: Mapping[str, Any]) -> tuple[str, list[str]]:
@@ -29,6 +30,11 @@ def calendar_range(data: Mapping[str, Any]) -> tuple[int, int]:
     return int(history), int(future)
 
 
+def feed_name(data: Mapping[str, Any]) -> str:
+    """Read the custom feed name, defaulting to an empty string."""
+    return str(data.get(CONF_FEED_NAME, "") or "").strip()
+
+
 @dataclass(slots=True)
 class ICalendarRuntimeData:
     """Runtime data for one config entry."""
@@ -39,6 +45,7 @@ class ICalendarRuntimeData:
     geocoding_url: str = ""
     history_weeks: int = DEFAULT_HISTORY_WEEKS
     future_weeks: int = DEFAULT_FUTURE_WEEKS
+    feed_name: str = ""
 
     cache: dict[str, dict[str, Any]] = field(default_factory=dict)
     store: Any = None

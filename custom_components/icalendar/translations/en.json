@@ -11,13 +11,15 @@
       "no_calendars": "Select at least one calendar to include.",
       "invalid_selection_mode": "Choose include or exclude.",
       "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment.",
-      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum."
+      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum.",
+      "feed_name_too_long": "Feed name must be 100 characters or fewer."
     },
     "step": {
       "user": {
         "title": "Add iCalendar feed",
         "description": "Create one secure iCalendar URL for multiple calendars. Include exports only the selected calendars. Exclude exports all calendars except those selected; leave the list empty to export all calendars.",
         "data": {
+          "feed_name": "Feed name (optional)",
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
           "geocoding_url": "Address lookup URL (optional)",
@@ -25,6 +27,7 @@
           "future_weeks": "Future events (weeks)"
         },
         "data_description": {
+          "feed_name": "Name shown for this calendar feed in apps like Google Calendar or Apple Calendar. Leave empty to use the default name.",
           "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
           "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
           "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."
@@ -35,6 +38,7 @@
         "description": "{url_block}\n\nLeave secret key empty to keep the existing one. Include exports only the selected calendars. Exclude exports all calendars except those selected; leave the list empty to export all calendars.",
         "data": {
           "secret": "New secret key (optional; minimum 20 chars)",
+          "feed_name": "Feed name (optional)",
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
           "geocoding_url": "Address lookup URL (optional)",
@@ -42,6 +46,7 @@
           "future_weeks": "Future events (weeks)"
         },
         "data_description": {
+          "feed_name": "Name shown for this calendar feed in apps like Google Calendar or Apple Calendar. Leave empty to use the default name.",
           "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
           "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
           "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."
@@ -57,7 +62,8 @@
       "invalid_selection_mode": "Choose include or exclude.",
       "already_configured": "This calendar selection is already configured.",
       "invalid_geocoding_url": "Enter an HTTP(S) Nominatim search endpoint without credentials, query parameters, or a fragment.",
-      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum."
+      "invalid_range": "History must be 0 or more weeks and future range must be at least 1 week, both within the allowed maximum.",
+      "feed_name_too_long": "Feed name must be 100 characters or fewer."
     },
     "step": {
       "init": {
@@ -65,6 +71,7 @@
         "description": "{url_block}\n\nLeave secret key empty to keep the existing one. Include exports only the selected calendars. Exclude exports all calendars except those selected; leave the list empty to export all calendars.",
         "data": {
           "secret": "New secret key (optional; minimum 20 chars)",
+          "feed_name": "Feed name (optional)",
           "selection_mode": "Selection mode",
           "calendar_entity_ids": "Calendars",
           "geocoding_url": "Address lookup URL (optional)",
@@ -72,6 +79,7 @@
           "future_weeks": "Future events (weeks)"
         },
         "data_description": {
+          "feed_name": "Name shown for this calendar feed in apps like Google Calendar or Apple Calendar. Leave empty to use the default name.",
           "geocoding_url": "Nominatim-compatible search endpoint. Sends event locations to this provider for Apple Calendar maps. Leave empty to disable. See the documentation for provider requirements.",
           "history_weeks": "How far back to include past events, in weeks (e.g. 4 for a month, 52 for a year). Set to 0 to exclude past events.",
           "future_weeks": "How far ahead to include upcoming events, in weeks (e.g. 4 for a month, 52 for a year)."

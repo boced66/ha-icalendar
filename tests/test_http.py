@@ -60,6 +60,41 @@ def test_combined_feed_namespaces_identical_events():
     assert len({event.uid for event in parsed.events}) == 2
 
 
+def test_custom_feed_name_overrides_default_single_calendar_name():
+    hass, entry, view = fixture()
+    entry.runtime_data.calendar_entity_ids = ['calendar.a']
+    entry.runtime_data.feed_name = '🏠 Family'
+    hass.states = SimpleNamespace(get=lambda _: SimpleNamespace(name='Original name'))
+    hass.registry = SimpleNamespace(async_get=lambda _: None)
+    view._fetch_events = AsyncMock(return_value=[])
+    response = asyncio.run(view.get(None, 'entry', 'a' * 24))
+    assert 'NAME:🏠 Family' in response.text
+    assert 'X-WR-CALNAME:🏠 Family' in response.text
+    assert 'Original name' not in response.text
+
+
+def test_custom_feed_name_overrides_default_combined_name():
+    hass, entry, view = fixture()
+    entry.runtime_data.calendar_entity_ids = ['calendar.a', 'calendar.b']
+    entry.runtime_data.feed_name = '🎉 Everything'
+    hass.states = SimpleNamespace(get=lambda _: SimpleNamespace(name='Calendar'))
+    view._fetch_events = AsyncMock(return_value=[])
+    response = asyncio.run(view.get(None, 'entry', 'a' * 24))
+    assert 'NAME:🎉 Everything' in response.text
+    assert 'X-WR-CALNAME:🎉 Everything' in response.text
+    assert 'iCalendar API' not in response.text
+
+
+def test_empty_feed_name_falls_back_to_default_naming():
+    hass, entry, view = fixture()
+    entry.runtime_data.calendar_entity_ids = ['calendar.a', 'calendar.b']
+    hass.states = SimpleNamespace(get=lambda _: SimpleNamespace(name='Calendar'))
+    view._fetch_events = AsyncMock(return_value=[])
+    response = asyncio.run(view.get(None, 'entry', 'a' * 24))
+    assert 'NAME:iCalendar API' in response.text
+    assert 'X-WR-CALNAME:iCalendar API' in response.text
+
+
 def test_exclusion_is_applied_before_fetching():
     hass, entry, view = fixture()
     entry.runtime_data.selection_mode = 'exclude'

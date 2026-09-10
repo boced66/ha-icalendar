@@ -47,6 +47,10 @@ By default, your feed includes **4 weeks in the past** and **52 weeks in the fut
 
 Want a full year of history for a "look back" view? Set it to 52. Just need next month's agenda and nothing else? Future = 4 is plenty. It's your call. 🎛️
 
+## 🏷️ Naming your feed
+
+By default, a feed shows up in apps like Google Calendar as either the source calendar's own name (single-calendar feed) or plain "iCalendar API" (combined feed) — not always the most useful label when you're juggling a few subscriptions. Set **Feed name** from setup, reconfigure, or options to give it something more recognizable, like "🏠 Family" or "🎉 Kids activities". It also renames the integration entry in Home Assistant, so the two stay in sync. Leave it empty any time to fall back to the default naming. ✏️
+
 ## 🎨 Calendar colors
 
 If a feed resolves to a single calendar, its color comes straight from that calendar entity's Home Assistant UI settings — set it there and it'll show up in the feed. Combined feeds (multiple calendars in one URL) skip calendar-level color, since there's no single color that would make sense.
@@ -70,11 +74,13 @@ A few practical notes:
 ## ⚙️ Configuration parameters
 
 - **Setup**
+  - `feed_name`: optional custom name for the feed, shown in apps like Google Calendar or Apple Calendar. Leave empty to use the default name (the source calendar's name for a single-calendar feed, or "iCalendar API" for a combined feed).
   - `selection_mode`: `include` or `exclude`.
   - `calendar_entity_ids`: calendars to include or exclude.
   - `history_weeks`: how far back to include past events, in weeks. Default `4` (~a month). `0` excludes past events entirely.
   - `future_weeks`: how far ahead to include upcoming events, in weeks. Default `52` (~a year).
 - **Reconfigure**
+  - `feed_name`: change the displayed name without changing the URL. Also updates the integration entry's title in Home Assistant.
   - `selection_mode` / `calendar_entity_ids`: change the selection without changing the URL.
   - `history_weeks` / `future_weeks`: change the exported time window without changing the URL.
   - `secret`: optional new secret (min. 20 ASCII letters/digits/underscores/hyphens). Leave blank to keep the current one.

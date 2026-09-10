@@ -41,6 +41,7 @@ def test_settings_shows_legacy_selection_and_url(settings):
     assert defaults(result) == {
         'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
         'secret': 'a' * 24, 'geocoding_url': '', 'history_weeks': 4, 'future_weeks': 52,
+        'feed_name': '',
     }
     assert 'https://ha.local/api/ics/feed/' in result['description_placeholders']['url_block']
 
@@ -58,7 +59,7 @@ def test_settings_saves_selection_and_reloads(settings, mode, entities, secret):
     assert saved['data'] == {
         'selection_mode': mode, 'calendar_entity_ids': entities,
         'secret': secret or 'a' * 24, 'geocoding_url': '',
-        'history_weeks': 4, 'future_weeks': 52,
+        'history_weeks': 4, 'future_weeks': 52, 'feed_name': '',
     }
     assert mode in saved['title']
     settings.hass.config_entries.async_reload.assert_awaited_once_with('feed')
@@ -75,6 +76,17 @@ def test_settings_saves_custom_history_and_future_range(settings):
     assert saved['future_weeks'] == 8
 
 
+def test_settings_saves_custom_feed_name_and_uses_it_as_title(settings):
+    result = asyncio.run(settings.async_step_init({
+        'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
+        'feed_name': '  🏠 Family  ',
+    }))
+    assert result['type'] == 'create_entry'
+    saved = settings.hass.config_entries.async_update_entry.call_args.kwargs
+    assert saved['data']['feed_name'] == '🏠 Family'
+    assert saved['title'] == '🏠 Family'
+
+
 @pytest.mark.parametrize('mode,entities,secret,error', [
     ('include', [], '', 'no_calendars'),
     ('include', ['calendar.missing'], '', 'entity_not_found'),
@@ -85,9 +97,21 @@ def test_invalid_settings_preserve_input_without_saving(settings, mode, entities
     data = {'selection_mode': mode, 'calendar_entity_ids': entities, 'secret': secret}
     result = asyncio.run(settings.async_step_init(data))
     assert error in result['errors'].values()
-    assert defaults(result) == {**data, 'geocoding_url': '', 'history_weeks': 4, 'future_weeks': 52}
+    assert defaults(result) == {
+        **data, 'geocoding_url': '', 'history_weeks': 4, 'future_weeks': 52, 'feed_name': '',
+    }
     settings.hass.config_entries.async_update_entry.assert_not_called()
     settings.hass.config_entries.async_reload.assert_not_awaited()
+
+
+def test_feed_name_too_long_preserves_input_without_saving(settings):
+    data = {
+        'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
+        'feed_name': 'x' * 101,
+    }
+    result = asyncio.run(settings.async_step_init(data))
+    assert 'feed_name_too_long' in result['errors'].values()
+    settings.hass.config_entries.async_update_entry.assert_not_called()
 
 
 @pytest.mark.parametrize('history_weeks,future_weeks', [

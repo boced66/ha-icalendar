@@ -83,10 +83,11 @@ class ICalendarView(HomeAssistantView):
                     event["_location_coordinates"] = point
 
         single_calendar = len(entity_ids) == 1
+        default_name = results[0]["name"] if single_calendar else NAME
         feed = build_icalendar(
             self.hass,
             entity_ids[0] if single_calendar else None,
-            results[0]["name"] if single_calendar else NAME,
+            runtime_data.feed_name or default_name,
             events,
         )
         return web.Response(body=feed, content_type=CONTENT_TYPE_ICAL, charset="utf-8",

@@ -9,7 +9,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_SECRET, DOMAIN
 from .http import ICalendarView
-from .models import ICalendarRuntimeData, calendar_range, calendar_selection
+from .models import ICalendarRuntimeData, calendar_range, calendar_selection, feed_name
 from .location import CONF_GEOCODING_URL, LocationResolver
 
 
@@ -38,6 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         geocoding_url=entry.data.get(CONF_GEOCODING_URL, ""),
         history_weeks=history_weeks,
         future_weeks=future_weeks,
+        feed_name=feed_name(entry.data),
         cache=cached or {},
         store=store,
     )
