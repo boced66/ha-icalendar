@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/boced66/ha-icalendar/issues",
   "loggers": ["ical"],
   "requirements": ["ical==13.2.2"],
-  "version": "2.2.1-b.2"
+  "version": "2.2.1"
 }
