@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 import hmac
 from typing import Any
@@ -14,7 +15,8 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import CONTENT_TYPE_ICAL, DOMAIN, URL_PATH_PREFIX, MODE_EXCLUDE, NAME
+from .const import (CONTENT_TYPE_ICAL, DEFAULT_FUTURE_WEEKS, DEFAULT_HISTORY_WEEKS,
+                    DOMAIN, URL_PATH_PREFIX, MODE_EXCLUDE, NAME)
 from .ical import build_icalendar
 from .models import ICalendarRuntimeData
 from .location import LocationResolver
@@ -105,6 +107,10 @@ class ICalendarView(HomeAssistantView):
                 if events is not None:
                     runtime.cache[entity_id] = {"name": state.name, "events": events}
                     if runtime.store is not None:
+                        # Intentionally reads runtime.cache at save time (not now): any
+                        # concurrent source update that lands before the delayed write
+                        # fires should be captured too, so the save always reflects the
+                        # freshest cache rather than a stale snapshot from this call.
                         runtime.store.async_delay_save(lambda: runtime.cache, 1)
             except (HomeAssistantError, TimeoutError):
                 _LOGGER.debug("Calendar %s unavailable; using cached events", entity_id)
@@ -114,9 +120,6 @@ class ICalendarView(HomeAssistantView):
         self, entity_id: str, runtime: ICalendarRuntimeData | None = None
     ) -> list[dict[str, Any]] | None:
         """Fetch events from Home Assistant calendar service."""
-        from datetime import datetime, timedelta, timezone
-        from .const import DEFAULT_FUTURE_WEEKS, DEFAULT_HISTORY_WEEKS
-
         history_weeks = runtime.history_weeks if runtime is not None else DEFAULT_HISTORY_WEEKS
         future_weeks = runtime.future_weeks if runtime is not None else DEFAULT_FUTURE_WEEKS
 

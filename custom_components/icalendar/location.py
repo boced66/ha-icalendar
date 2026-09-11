@@ -7,6 +7,7 @@ import hashlib
 import math
 import time
 from typing import Any
+from urllib.parse import urlsplit
 
 from aiohttp import ClientError, ClientTimeout
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -16,8 +17,20 @@ CONF_GEOCODING_URL = "geocoding_url"
 REQUEST_INTERVAL = 15  # At most four requests/minute across all feeds.
 CACHE_TTL = 90 * 86400
 MISS_TTL = 7 * 86400
-USER_AGENT = "ha-icalendar/2.0 (+https://github.com/codyc1515/ha-icalendar)"
+USER_AGENT = "ha-icalendar/2.2 (+https://github.com/boced66/ha-icalendar)"  # Keep in sync with manifest.json version.
 MATCH_VERSION = 2
+
+
+def is_valid_geocoding_url(endpoint: str) -> bool:
+    """Check that endpoint is a bare HTTP(S) URL with no credentials or extras."""
+    if not endpoint:
+        return True
+    try:
+        parsed = urlsplit(endpoint)
+    except ValueError:
+        return False
+    return not (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.query or parsed.fragment)
 
 
 def same_location(first: tuple[float, float], second: tuple[float, float]) -> bool:
@@ -107,5 +120,8 @@ class LocationResolver:
             # Bound storage even for feeds with frequently changing addresses.
             while len(self.cache) > 2000:
                 del self.cache[next(iter(self.cache))]
+            # Intentionally reads self.cache at save time (not now): any concurrent
+            # resolve() that lands before the delayed write fires should be captured
+            # too, so the save always reflects the freshest cache, not a stale copy.
             self.store.async_delay_save(lambda: self.cache, 1)
             return point

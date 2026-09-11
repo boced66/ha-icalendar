@@ -42,7 +42,7 @@ def build_icalendar(
     return inject_calendar_metadata(
         output,
         calendar_name=calendar_name,
-        calendar_color=resolve_calendar_color(hass, entity_id) if entity_id else None,
+        calendar_color=resolve_calendar_color(hass, entity_id),
     )
 
 
@@ -144,9 +144,11 @@ def parse_ha_datetime_or_date(value: str) -> datetime | date:
     return datetime.strptime(value, "%Y-%m-%d").date()
 
 
-def resolve_calendar_color(hass: HomeAssistant, entity_id: str) -> str | None:
+def resolve_calendar_color(hass: HomeAssistant, entity_id: str | None) -> str | None:
     """Resolve calendar color from HA entity options."""
     resolved: str | None = None
+    if entity_id is None:
+        return None
     registry = er.async_get(hass)
     if registry_entry := registry.async_get(entity_id):
         if color := registry_entry.options.get("calendar", {}).get("color"):

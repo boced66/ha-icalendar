@@ -87,6 +87,18 @@ def test_settings_saves_custom_feed_name_and_uses_it_as_title(settings):
     assert saved['title'] == '🏠 Family'
 
 
+def test_clearing_feed_name_reverts_to_generated_title(settings):
+    settings.config_entry.data['feed_name'] = '🏠 Family'
+    result = asyncio.run(settings.async_step_init({
+        'selection_mode': 'include', 'calendar_entity_ids': ['calendar.original'],
+        'feed_name': '',
+    }))
+    assert result['type'] == 'create_entry'
+    saved = settings.hass.config_entries.async_update_entry.call_args.kwargs
+    assert saved['data']['feed_name'] == ''
+    assert saved['title'] == 'iCalendar API (include: calendar.original)'
+
+
 @pytest.mark.parametrize('mode,entities,secret,error', [
     ('include', [], '', 'no_calendars'),
     ('include', ['calendar.missing'], '', 'entity_not_found'),

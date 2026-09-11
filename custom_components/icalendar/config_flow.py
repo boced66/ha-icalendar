@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 import secrets
 import re
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote
 
 import voluptuous as vol
 
@@ -36,7 +36,7 @@ from .const import (
 )
 
 from .models import calendar_range, calendar_selection, feed_name
-from .location import CONF_GEOCODING_URL
+from .location import CONF_GEOCODING_URL, is_valid_geocoding_url
 
 
 def _generate_secret() -> str:
@@ -80,13 +80,7 @@ def _title_for_selection(mode: str, entity_ids: list[str], custom_name: str = ""
 
 
 def _selection_errors(hass: HomeAssistant, data: Mapping[str, Any]) -> dict[str, str]:
-    endpoint = data.get(CONF_GEOCODING_URL, "")
-    try:
-        parsed = urlsplit(endpoint)
-        if endpoint and (parsed.scheme not in ("http", "https") or not parsed.hostname
-                         or parsed.username or parsed.password or parsed.query or parsed.fragment):
-            return {CONF_GEOCODING_URL: "invalid_geocoding_url"}
-    except ValueError:
+    if not is_valid_geocoding_url(data.get(CONF_GEOCODING_URL, "")):
         return {CONF_GEOCODING_URL: "invalid_geocoding_url"}
     mode, entities = calendar_selection(data)
     if mode not in (MODE_INCLUDE, MODE_EXCLUDE):
@@ -303,8 +297,6 @@ def _build_user_schema(user_input: Mapping[str, Any] | None = None) -> vol.Schem
     mode, entity_ids = calendar_selection(user_input or {})
     history_weeks, future_weeks = calendar_range(user_input or {})
     return vol.Schema({
-        vol.Optional(CONF_FEED_NAME, default=feed_name(user_input or {})): str,
-        vol.Optional(CONF_GEOCODING_URL, default=(user_input or {}).get(CONF_GEOCODING_URL, "")): str,
         vol.Required(CONF_SELECTION_MODE, default=mode): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[MODE_INCLUDE, MODE_EXCLUDE], translation_key="selection_mode"
@@ -313,6 +305,10 @@ def _build_user_schema(user_input: Mapping[str, Any] | None = None) -> vol.Schem
         vol.Required(CONF_CALENDAR_ENTITY_IDS, default=entity_ids): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["calendar"], multiple=True)
         ),
+        vol.Optional(CONF_FEED_NAME, default=feed_name(user_input or {})): vol.All(
+            str, vol.Length(max=MAX_FEED_NAME_LENGTH)
+        ),
+        vol.Optional(CONF_GEOCODING_URL, default=(user_input or {}).get(CONF_GEOCODING_URL, "")): str,
         vol.Required(CONF_HISTORY_WEEKS, default=history_weeks): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=MAX_HISTORY_WEEKS, step=1, mode=selector.NumberSelectorMode.BOX,

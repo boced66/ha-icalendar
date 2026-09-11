@@ -1,4 +1,10 @@
-"""Data models for iCalendar integration runtime."""
+"""Data models for iCalendar integration runtime.
+
+The reader functions below (`calendar_selection`, `calendar_range`, `feed_name`)
+don't just read raw config entry data: they also normalize it (trimming strings,
+coercing types, applying defaults for missing/legacy values) so callers always
+get a consistent, ready-to-use shape regardless of how the data was stored.
+"""
 
 from __future__ import annotations
 
@@ -31,7 +37,7 @@ def calendar_range(data: Mapping[str, Any]) -> tuple[int, int]:
 
 
 def feed_name(data: Mapping[str, Any]) -> str:
-    """Read the custom feed name, defaulting to an empty string."""
+    """Read the custom feed name, trimmed, defaulting to an empty string."""
     return str(data.get(CONF_FEED_NAME, "") or "").strip()
 
 
