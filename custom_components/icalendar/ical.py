@@ -117,9 +117,7 @@ def event_from_ha(event: dict[str, Any]) -> Event | None:
         )
         if result.location and (point := coordinates(event.get("_location_coordinates"))):
             result.geo = Geo(*point)
-            # RFC 6868 parameter encoding differs from RFC 5545 TEXT escaping.
-            title = result.location.replace("^", "^^").replace('"', "^'")
-            title = title.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "^n")
+            title = result.location.replace("\r\n", "\n").replace("\r", "\n")
             result.extras.append(ParsedProperty(
                 name="X-APPLE-STRUCTURED-LOCATION",
                 value=f"geo:{point[0]},{point[1]}",
