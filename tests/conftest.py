@@ -10,12 +10,14 @@ sys.path.insert(0, str(ROOT))
 for name in (
     'homeassistant', 'homeassistant.components', 'homeassistant.components.frontend',
     'homeassistant.components.http', 'homeassistant.core', 'homeassistant.helpers',
+    'homeassistant.helpers.config_validation',
     'homeassistant.helpers.entity_registry', 'homeassistant.helpers.typing',
     'homeassistant.helpers.selector', 'homeassistant.config_entries',
     'homeassistant.exceptions', 'homeassistant.helpers.storage',
     'homeassistant.helpers.aiohttp_client',
 ):
     module = ModuleType(name)
+    module.__path__ = []
     sys.modules[name] = module
     if '.' in name:
         parent, child = name.rsplit('.', 1)
@@ -51,3 +53,6 @@ ha.helpers.selector.NumberSelectorConfig = dict
 ha.helpers.selector.NumberSelectorMode = type(
     'NumberSelectorMode', (), {'BOX': 'box', 'SLIDER': 'slider'}
 )
+
+# Mock du schema helper utilisé dans __init__.py :
+ha.helpers.config_validation.config_entry_only_config_schema = lambda domain: MagicMock()
