@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import homeassistant.helpers.config_validation as cv
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
@@ -12,6 +14,7 @@ from .http import ICalendarView
 from .models import ICalendarRuntimeData, calendar_range, calendar_selection, feed_name
 from .location import CONF_GEOCODING_URL, LocationResolver
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the iCalendar component."""
