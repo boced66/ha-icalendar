@@ -1,4 +1,4 @@
-ical==14.2.0
+ical>=14.3.0
 aiohttp>=3.11
 voluptuous>=0.15
 pytest>=8
